@@ -7,5 +7,10 @@ async function publishPost({ url, content, userId }) {
     await postRepository.createPost({ url, content, userId });
 }
 
-const postService = { publishPost };
+async function getPosts() {
+    const posts = await postRepository.getPosts();
+    return posts;
+}
+
+const postService = { publishPost, getPosts };
 export default postService;

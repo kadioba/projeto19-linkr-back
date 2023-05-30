@@ -6,5 +6,10 @@ async function publishPost(req, res) {
     res.sendStatus(201);
 }
 
-const postController = { publishPost };
+async function getPosts(req, res) {
+    const posts = await postService.getPosts();
+    res.send(posts);
+}
+
+const postController = { publishPost, getPosts };
 export default postController;
