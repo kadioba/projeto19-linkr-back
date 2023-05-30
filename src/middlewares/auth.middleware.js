@@ -1,6 +1,6 @@
 import errors from "../errors/index.errors.js";
 import uuidValidator from "../utils/uuidValidator.util.js";
-import authRepository from "../repositories/auth.repository.js";
+import userRepository from "../repositories/user.repository.js";
 
 async function authValidation(req, res, next) {
   const { authorization } = req.headers;
@@ -8,12 +8,13 @@ async function authValidation(req, res, next) {
 
   if (!token || !uuidValidator(token)) throw errors.unauthorized();
 
-  const queryResult = await authRepository.findUserByToken({ token });
+  const queryResult = await userRepository.findUserByToken({ token });
 
   if (!queryResult.rowCount || !queryResult.rows[0].active) throw errors.unauthorized();
 
-  const { userId } = queryResult.rows[0];
+  const { user_id: userId } = queryResult.rows[0];
   res.locals.userId = userId;
+  res.locals.token = token;
 
   next();
 }

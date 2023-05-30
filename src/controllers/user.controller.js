@@ -1,14 +1,19 @@
 import userService from "../services/user.service.js";
 
-async function insertOne(req, res) {
-  const user = req.body;
-  await userService.insertOne({ user });
+async function signUp(req, res) {
+  await userService.signUp({ ...req.body });
   res.sendStatus(201);
 }
 
-async function find(req, res) {}
-async function updateOne(req, res) {}
-async function deleteOne(req, res) {}
+async function signIn(req, res) {
+  const token = await userService.signIn({ ...req.body });
+  res.send(token);
+}
 
-const userController = { insertOne, find, updateOne, deleteOne };
+async function signOut(_req, res) {
+  await userService.signOut({ ...res.locals });
+  res.sendStatus(200);
+}
+
+const userController = { signUp, signIn, signOut };
 export default userController;
