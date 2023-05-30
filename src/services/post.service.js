@@ -1,7 +1,9 @@
-import userRepository from "../repositories/user.repository";
+import errors from "../errors/index.errors.js";
+import postRepository from "../repositories/post.repository.js";
+import userRepository from "../repositories/user.repository.js";
 
-async function publishPost({ url, content, userId }) {
-    const { rowCount: userExists } = await userRepository.findUserById({ userId });
+async function publishPost(url, content, userId) {
+    const { rowCount: userExists } = await userRepository.findUserById(userId);
     if (!userExists) throw errors.notFound();
 
     await postRepository.createPost({ url, content, userId });

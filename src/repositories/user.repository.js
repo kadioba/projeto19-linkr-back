@@ -32,7 +32,7 @@ async function signOutUser({ userId, token }) {
   return await db.query(`UPDATE sessions SET active = false WHERE user_id = $1 AND token = $2;`, [userId, token]);
 }
 
-async function findUserById({ userId }) {
+async function findUserById(userId) {
   return await db.query(`SELECT * FROM users WHERE id = $1;`, [userId]);
 }
 
