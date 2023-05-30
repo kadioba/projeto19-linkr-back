@@ -1,12 +1,36 @@
 import db from "../configs/database.connection.js";
 
-async function insertOne({ user }) {
-    await db.query(`INSERT into users ...`)
+async function createUser({ email, password, username, picture }) {
+  return await db.query(
+    `
+    INSERT INTO
+        users (
+            email,
+            password,
+            username,
+            picture
+        )
+    VALUES ($1, $2, $3, $4);
+    `,
+    [email, password, username, picture]
+  );
 }
 
-async function find() {}
-async function updateOne() {}
-async function deleteOne() {}
+async function findUserByEmail({ email }) {
+  return await db.query(`SELECT * FROM users WHERE email = $1;`, [email]);
+}
 
-const userRepository = { insertOne, find, updateOne, deleteOne };
+async function createSession({ userId, token }) {
+  return await db.query(`INSERT INTO sessions (user_id, token) VALUES ($1, $2);`, [userId, token]);
+}
+
+async function findUserByToken({ token }) {
+  return await db.query(`SELECT * FROM sessions WHERE token = $1;`, [token]);
+}
+
+async function signOutUser({ userId, token }) {
+  return await db.query(`UPDATE sessions SET active = false WHERE user_id = $1 AND token = $2;`, [userId, token]);
+}
+
+const userRepository = { createUser, findUserByEmail, createSession, findUserByToken, signOutUser };
 export default userRepository;
