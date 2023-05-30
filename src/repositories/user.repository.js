@@ -32,5 +32,9 @@ async function signOutUser({ userId, token }) {
   return await db.query(`UPDATE sessions SET active = false WHERE user_id = $1 AND token = $2;`, [userId, token]);
 }
 
-const userRepository = { createUser, findUserByEmail, createSession, findUserByToken, signOutUser };
+async function findUserById(userId) {
+  return await db.query(`SELECT * FROM users WHERE id = $1;`, [userId]);
+}
+
+const userRepository = { createUser, findUserByEmail, createSession, findUserByToken, signOutUser, findUserById };
 export default userRepository;
