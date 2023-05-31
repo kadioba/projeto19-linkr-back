@@ -33,7 +33,7 @@ async function signOutUser({ userId, token }) {
 }
 
 async function findUserById(userId) {
-  return await db.query(`SELECT * FROM users WHERE id = $1;`, [userId]);
+  return await db.query(`SELECT id, email, picture, username, created_at FROM users WHERE id = $1;`, [userId]);
 }
 
 const userRepository = { createUser, findUserByEmail, createSession, findUserByToken, signOutUser, findUserById };

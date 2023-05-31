@@ -29,5 +29,9 @@ async function signOut({ userId, token }) {
   await userRepository.signOutUser({ userId, token })
 }
 
-const userService = { signUp, signIn, signOut };
+async function getUser(userId) {
+  return await userRepository.findUserById(userId);
+}
+
+const userService = { signUp, signIn, signOut, getUser };
 export default userService;

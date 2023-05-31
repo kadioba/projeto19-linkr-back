@@ -9,5 +9,6 @@ const usersRouter = Router();
 usersRouter.post("/users/signup", validateSchema(userSchema.signUp), userController.signUp)
 usersRouter.post("/users/signin", validateSchema(userSchema.signIn), userController.signIn)
 usersRouter.post("/users/signout", authValidation, userController.signOut) // AUTH
+usersRouter.get("/user", authValidation, userController.getUser) // AUTH
 
 export default usersRouter;

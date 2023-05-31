@@ -15,5 +15,10 @@ async function signOut(_req, res) {
   res.sendStatus(200);
 }
 
-const userController = { signUp, signIn, signOut };
+async function getUser(req, res) {
+  const user = await userService.getUser(res.locals.userId);
+  res.send(user.rows[0]);
+}
+
+const userController = { signUp, signIn, signOut, getUser };
 export default userController;
