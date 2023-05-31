@@ -2,6 +2,9 @@ import errors from "../errors/index.errors.js";
 import postRepository from "../repositories/post.repository.js";
 import userRepository from "../repositories/user.repository.js";
 import urlMetadata from "url-metadata";
+import fetch from "node-fetch";
+
+global.fetch = fetch;
 
 async function publishPost(url, content, userId) {
     const { rowCount: userExists } = await userRepository.findUserById(userId);
