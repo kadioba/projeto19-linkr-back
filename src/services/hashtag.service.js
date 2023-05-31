@@ -1,13 +1,20 @@
 import hashtagRepository from "../repositories/hashtag.repository.js"
 
-async function getTrending() {
-    const {rows: trending} = await hashtagRepository.getTrending()
+async function getTrendingHashtags() {
+    const {rows: trendingHashtags} = await hashtagRepository.getTrendingHashtags()
 
-    return trending
+    return trendingHashtags
+}
+
+async function getPostsByHashtag(hashtag){
+    const {rows: postsByHashtag} = await hashtagRepository.getPostsByHashtag(hashtag)
+
+    return postsByHashtag
 }
 
 const hashtagService = {
-    getTrending
+    getTrendingHashtags,
+    getPostsByHashtag
 }
 
 export default hashtagService

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import usersRouter from "./users.router.js";
-import postRouter from "./post.routes.js";
+import postRouter from "./post.router.js";
 import hashtagsRouter from "./hashtags.router.js";
 
 const router = Router();

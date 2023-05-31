@@ -1,6 +1,6 @@
 import db from "../configs/database.connection.js";
 
-function getTrending() {
+function getTrendingHashtags() {
     return db.query(`
     SELECT
         pht.hashtag_id,
@@ -18,8 +18,31 @@ function getTrending() {
     `)
 }
 
+function getPostsByHashtag(hashtag) {
+    return db.query(`
+    SELECT
+        posts.id,
+        posts.content,
+        posts.url,
+        posts.created_at,
+        users.username,
+        users.picture,
+        array_agg(hashtags.name) as hashtags
+    FROM posts
+        JOIN users_posts ON posts.id = users_posts.post_id
+        JOIN users ON users_posts.user_id = users.id
+        JOIN posts_hashtags ON posts.id = posts_hashtags.post_id
+        JOIN hashtags ON posts_hashtags.hashtag_id = hashtags.id
+    GROUP BY posts.id, users.username, users.picture
+    HAVING $1 = ANY(array_agg(hashtags.name))
+    ORDER BY posts.created_at DESC
+    LIMIT 20;
+    `, [hashtag])
+}
+
 const hashtagRepository = {
-    getTrending
+    getTrendingHashtags,
+    getPostsByHashtag
 }
 
 export default hashtagRepository
