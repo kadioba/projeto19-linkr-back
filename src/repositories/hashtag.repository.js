@@ -24,13 +24,15 @@ function getPostsByHashtag(hashtag) {
         posts.id,
         posts.content,
         posts.url,
+        posts.url_title,
+        posts.url_description,
+        posts.url_picture,
         posts.created_at,
         users.username,
         users.picture,
         array_agg(hashtags.name) as hashtags
     FROM posts
-        JOIN users_posts ON posts.id = users_posts.post_id
-        JOIN users ON users_posts.user_id = users.id
+        JOIN users ON posts.user_id = users.id
         JOIN posts_hashtags ON posts.id = posts_hashtags.post_id
         JOIN hashtags ON posts_hashtags.hashtag_id = hashtags.id
     GROUP BY posts.id, users.username, users.picture
