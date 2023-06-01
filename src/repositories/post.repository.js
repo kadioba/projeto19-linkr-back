@@ -22,11 +22,29 @@ async function createPost({ url, content, userId }, data) {
 
 async function getPosts() {
   return await db.query(`
-  SELECT posts.id, posts.content, posts.url, posts.created_at, posts.url_title, posts.url_description, posts.url_picture,
-    users.picture, users.username
-    FROM posts
-    JOIN users ON posts.user_id = users.id
-    ORDER BY created_at DESC LIMIT 20;`);
+    SELECT
+      posts.id,
+      posts.content,
+      posts.url,
+      posts.created_at,
+      posts.url_title,
+      posts.url_description,
+      posts.url_picture,
+      users.picture,
+      users.username,
+      array_remove(ARRAY_AGG(likes.user_id), NULL) AS liked_by_user_ids,
+      array_remove(ARRAY_AGG(liked_users.username), NULL) AS liked_by_usernames
+    FROM
+      posts
+      JOIN users ON posts.user_id = users.id
+      LEFT JOIN likes ON posts.id = likes.post_id AND likes.active = true
+      LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
+    GROUP BY
+      posts.id, users.id
+    ORDER BY
+      posts.created_at DESC
+    LIMIT 20;
+  `);
 }
 
 async function findHashtagByName(name) {
@@ -43,5 +61,18 @@ async function linkPostToHashtag(postId, hashtagId) {
   await db.query(`INSERT INTO posts_hashtags (post_id, hashtag_id) VALUES ($1, $2);`, [postId, hashtagId]);
 }
 
-const postRepository = { createPost, getPosts, findHashtagByName, createHashtag, linkPostToHashtag };
+async function like({ userId, postId }) {
+  return await db.query(
+    `
+  INSERT INTO likes (user_id, post_id, active) 
+      VALUES ($1, $2, true)
+      ON CONFLICT (user_id, post_id) DO UPDATE SET
+      active = NOT likes.active
+      RETURNING active;
+    `,
+    [userId, postId]
+  );
+}
+
+const postRepository = { createPost, getPosts, findHashtagByName, createHashtag, linkPostToHashtag, like };
 export default postRepository;

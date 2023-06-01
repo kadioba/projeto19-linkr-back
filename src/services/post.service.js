@@ -47,5 +47,11 @@ async function getPosts() {
   return posts;
 }
 
-const postService = { publishPost, getPosts };
+async function like({ postId, userId }) {
+  const response = await postRepository.like({ postId, userId });
+  const { active } = response.rows[0];
+  return {isLiked: active};
+}
+
+const postService = { publishPost, getPosts, like };
 export default postService;
