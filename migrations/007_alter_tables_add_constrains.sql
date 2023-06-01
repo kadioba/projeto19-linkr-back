@@ -21,3 +21,7 @@ ADD
 ALTER TABLE "likes"
 ADD
     CONSTRAINT "likes_fk1" FOREIGN KEY ("post_id") REFERENCES "posts"("id");
+
+ALTER TABLE "likes"
+ADD
+    CONSTRAINT "likes_user_post_unique" UNIQUE ("user_id", "post_id");

@@ -9,7 +9,8 @@
     "dev": "nodemon ./src/app.js",
     "migrei:up": "npx migrei up",
     "migrei:down": "npx migrei down",
-    "dev-ninja": "console-ninja nodemon ./src/app.js"
+    "dev-ninja": "console-ninja nodemon ./src/app.js",
+    "dump": "npx migrei down && npx migrei up && sudo PGPASSWORD=$(grep '^DB_PASSWORD' .env | cut -d '=' -f2) pg_dump -h $(grep '^DB_HOST' .env | cut -d '=' -f2) -p $(grep '^DB_PORT' .env | cut -d '=' -f2) -U $(grep '^DB_USERNAME' .env | cut -d '=' -f2) $(grep '^DB_NAME' .env | cut -d '=' -f2) --inserts --no-owner > dump.sql"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +24,6 @@
     "express-async-errors": "^3.1.1",
     "http-status": "^1.6.2",
     "joi": "^17.9.2",
-    "node-fetch": "^3.3.1",
     "pg": "^8.11.0",
     "react-meta-tags": "^1.0.1",
     "url-metadata": "^3.0.1",
