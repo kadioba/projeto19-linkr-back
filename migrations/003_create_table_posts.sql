@@ -7,7 +7,7 @@ CREATE TABLE
         "url_title" TEXT NOT NULL,
         "url_description" TEXT NOT NULL,
         "url_picture" TEXT NOT NULL,
-        "created_at" timestamptz NOT NULL DEFAULT 'NOW()',
+        "created_at" timestamptz NOT NULL DEFAULT NOW(),
         CONSTRAINT "posts_pk" PRIMARY KEY ("id")
     )
 WITH (OIDS = FALSE);

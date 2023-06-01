@@ -25,20 +25,13 @@ async function publishPost(url, content, userId) {
 
   const publishPostWithTransaction = async (client) => {
     const postId = await postRepository.createPost({ url, content, userId }, data, client);
-
     if (hashtags) {
       for (const hashtag of hashtags) {
-        let existingHashtag = await postRepository.findHashtagByName(hashtag, client);
-
-        if (!existingHashtag) {
-          existingHashtag = await postRepository.createHashtag(hashtag, client);
-        }
-
-        await postRepository.linkPostToHashtag(postId, existingHashtag.id, client);
+        await postRepository.createHashtag(hashtag, postId, client);
       }
     }
   };
-
+  
   await withTransaction(publishPostWithTransaction);
 }
 
