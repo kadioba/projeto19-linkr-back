@@ -1,7 +1,7 @@
 import db from "../configs/database.connection.js";
 
-async function createPost({ url, content, userId }, data) {
-  const result = await db.query(
+async function createPost({ url, content, userId }, data, client = db) {
+  const result = await client.query(
     `
     INSERT INTO
         posts (
@@ -20,8 +20,8 @@ async function createPost({ url, content, userId }, data) {
   return result.rows[0].id;
 }
 
-async function getPosts() {
-  return await db.query(`
+async function getPosts(client = db) {
+  return await client.query(`
     SELECT
       posts.id,
       posts.content,
@@ -30,6 +30,7 @@ async function getPosts() {
       posts.url_title,
       posts.url_description,
       posts.url_picture,
+      users.id AS user_id,
       users.picture,
       users.username,
       array_remove(ARRAY_AGG(likes.user_id), NULL) AS liked_by_user_ids,
@@ -47,22 +48,22 @@ async function getPosts() {
   `);
 }
 
-async function findHashtagByName(name) {
-  const result = await db.query(`SELECT * FROM hashtags WHERE name = $1;`, [name]);
+async function findHashtagByName(name, client = db) {
+  const result = await client.query(`SELECT * FROM hashtags WHERE name = $1;`, [name]);
   return result.rows[0];
 }
 
-async function createHashtag(name) {
-  const result = await db.query(`INSERT INTO hashtags (name) VALUES ($1) RETURNING id;`, [name]);
+async function createHashtag(name, client = db) {
+  const result = await client.query(`INSERT INTO hashtags (name) VALUES ($1) RETURNING id;`, [name]);
   return result.rows[0];
 }
 
-async function linkPostToHashtag(postId, hashtagId) {
-  await db.query(`INSERT INTO posts_hashtags (post_id, hashtag_id) VALUES ($1, $2);`, [postId, hashtagId]);
+async function linkPostToHashtag(postId, hashtagId, client = db) {
+  await client.query(`INSERT INTO posts_hashtags (post_id, hashtag_id) VALUES ($1, $2);`, [postId, hashtagId]);
 }
 
-async function like({ userId, postId }) {
-  return await db.query(
+async function like({ userId, postId }, client = db) {
+  return await client.query(
     `
   INSERT INTO likes (user_id, post_id, active) 
       VALUES ($1, $2, true)

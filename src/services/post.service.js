@@ -1,13 +1,9 @@
-import errors from "../errors/index.errors.js";
 import postRepository from "../repositories/post.repository.js";
-import userRepository from "../repositories/user.repository.js";
 import urlMetadata from "url-metadata";
 import extractHashtags from "../utils/extractHashtags.util.js";
+import withTransaction from "../utils/withTransaction.util.js";
 
 async function publishPost(url, content, userId) {
-  const { rowCount: userExists } = await userRepository.findUserById(userId);
-  if (!userExists) throw errors.notFound();
-
   let hashtags;
   if (content) {
     hashtags = extractHashtags(content);
@@ -27,19 +23,23 @@ async function publishPost(url, content, userId) {
     console.log(error);
   }
 
-  const postId = await postRepository.createPost({ url, content, userId }, data);
+  const publishPostWithTransaction = async (client) => {
+    const postId = await postRepository.createPost({ url, content, userId }, data, client);
 
-  if (hashtags) {
-    for (const hashtag of hashtags) {
-      let existingHashtag = await postRepository.findHashtagByName(hashtag);
+    if (hashtags) {
+      for (const hashtag of hashtags) {
+        let existingHashtag = await postRepository.findHashtagByName(hashtag, client);
 
-      if (!existingHashtag) {
-        existingHashtag = await postRepository.createHashtag(hashtag);
+        if (!existingHashtag) {
+          existingHashtag = await postRepository.createHashtag(hashtag, client);
+        }
+
+        await postRepository.linkPostToHashtag(postId, existingHashtag.id, client);
       }
-
-      await postRepository.linkPostToHashtag(postId, existingHashtag.id);
     }
-  }
+  };
+
+  await withTransaction(publishPostWithTransaction);
 }
 
 async function getPosts() {
@@ -50,7 +50,7 @@ async function getPosts() {
 async function like({ postId, userId }) {
   const response = await postRepository.like({ postId, userId });
   const { active } = response.rows[0];
-  return {isLiked: active};
+  return { isLiked: active };
 }
 
 const postService = { publishPost, getPosts, like };
