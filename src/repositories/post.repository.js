@@ -48,18 +48,21 @@ async function getPosts(client = db) {
   `);
 }
 
-async function findHashtagByName(name, client = db) {
-  const result = await client.query(`SELECT * FROM hashtags WHERE name = $1;`, [name]);
-  return result.rows[0];
-}
-
-async function createHashtag(name, client = db) {
-  const result = await client.query(`INSERT INTO hashtags (name) VALUES ($1) RETURNING id;`, [name]);
-  return result.rows[0];
-}
-
-async function linkPostToHashtag(postId, hashtagId, client = db) {
-  await client.query(`INSERT INTO posts_hashtags (post_id, hashtag_id) VALUES ($1, $2);`, [postId, hashtagId]);
+async function createHashtag(name, postId, client = db) {
+  return await client.query(
+    `
+  WITH upsert AS (
+    INSERT INTO hashtags (name)
+    VALUES ($1)
+    ON CONFLICT (name)
+    DO
+    UPDATE SET name = EXCLUDED.name
+    RETURNING id
+  )
+  INSERT INTO posts_hashtags (post_id, hashtag_id)
+  SELECT $2, id FROM upsert;`,
+    [name, postId]
+  );
 }
 
 async function like({ userId, postId }, client = db) {
@@ -75,5 +78,5 @@ async function like({ userId, postId }, client = db) {
   );
 }
 
-const postRepository = { createPost, getPosts, findHashtagByName, createHashtag, linkPostToHashtag, like };
+const postRepository = { createPost, getPosts, createHashtag, like };
 export default postRepository;
