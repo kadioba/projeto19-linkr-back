@@ -40,6 +40,11 @@ async function getPosts() {
   return posts;
 }
 
+async function getPostsById(id) {
+  const posts = await postRepository.getPostsById(id);
+  return posts;
+}
+
 async function like({ postId, userId }) {
   const response = await postRepository.like({ postId, userId });
   const { active } = response.rows[0];
@@ -72,6 +77,5 @@ async function updatePost({ postId, content, userId }) {
   await withTransaction(editPostWithTransaction);
 }
 
-
-const postService = { publishPost, getPosts, like, updatePost };
+const postService = { publishPost, getPosts, getPostsById, like, updatePost };
 export default postService;
