@@ -10,6 +10,7 @@ usersRouter.post("/users/signup", validateSchema(userSchema.signUp), userControl
 usersRouter.post("/users/signin", validateSchema(userSchema.signIn), userController.signIn)
 usersRouter.post("/users/signout", authValidation, userController.signOut) // AUTH
 usersRouter.get("/user", authValidation, userController.getUser) // AUTH
-usersRouter.get("/user/search", authValidation, userController.searchUsers)
+usersRouter.get("/user/:id", authValidation, userController.getUserById)
+usersRouter.get("/users/search", authValidation, userController.searchUsers)
 
 export default usersRouter;

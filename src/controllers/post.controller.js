@@ -11,6 +11,12 @@ async function getPosts(req, res) {
   res.send(posts.rows);
 }
 
+async function getPostsById(req, res) {
+  const {id} = req.params;
+  const posts = await postService.getPostsById(id);
+  res.send(posts.rows);
+}
+
 async function like(req, res) {
   const { postId } = req.params;
   const { userId } = res.locals;
@@ -18,5 +24,5 @@ async function like(req, res) {
   res.send(response);
 }
 
-const postController = { publishPost, getPosts, like };
+const postController = { publishPost, getPosts, getPostsById, like };
 export default postController;

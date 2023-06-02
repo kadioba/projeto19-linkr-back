@@ -48,6 +48,35 @@ async function getPosts(client = db) {
   `);
 }
 
+async function getPostsById(id, client=db){
+  return await client.query(`
+    SELECT
+      posts.id,
+      posts.content,
+      posts.url,
+      posts.created_at,
+      posts.url_title,
+      posts.url_description,
+      posts.url_picture,
+      users.id AS user_id,
+      users.picture,
+      users.username,
+      array_remove(ARRAY_AGG(likes.user_id), NULL) AS liked_by_user_ids,
+      array_remove(ARRAY_AGG(liked_users.username), NULL) AS liked_by_usernames
+    FROM
+      posts
+      JOIN users ON posts.user_id = users.id
+      LEFT JOIN likes ON posts.id = likes.post_id AND likes.active = true
+      LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
+    WHERE
+      users.id = $1
+    GROUP BY
+      posts.id, users.id
+    ORDER BY
+      posts.created_at DESC;
+  `, [id]);
+}
+
 async function createHashtag(name, postId, client = db) {
   return await client.query(
     `
@@ -78,5 +107,5 @@ async function like({ userId, postId }, client = db) {
   );
 }
 
-const postRepository = { createPost, getPosts, createHashtag, like };
+const postRepository = { createPost, getPosts, getPostsById, createHashtag, like };
 export default postRepository;
