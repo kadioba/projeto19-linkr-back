@@ -40,11 +40,16 @@ async function getPosts() {
   return posts;
 }
 
+async function getPostsById(id) {
+  const posts = await postRepository.getPostsById(id);
+  return posts;
+}
+
 async function like({ postId, userId }) {
   const response = await postRepository.like({ postId, userId });
   const { active } = response.rows[0];
   return { isLiked: active };
 }
 
-const postService = { publishPost, getPosts, like };
+const postService = { publishPost, getPosts, getPostsById, like };
 export default postService;
