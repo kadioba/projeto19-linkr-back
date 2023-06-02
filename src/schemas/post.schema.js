@@ -6,8 +6,12 @@ const publishPost = joi.object({
     .trim()
     .uri({ scheme: ["http", "https"] })
     .required(),
-  content: joi.string().trim().allow("").required(),
+  content: joi.string().trim().allow(""),
 });
 
-const postSchema = { publishPost };
+const editPost = joi.object({
+  content: joi.string().trim().allow(""),
+});
+
+const postSchema = { publishPost, editPost };
 export default postSchema;

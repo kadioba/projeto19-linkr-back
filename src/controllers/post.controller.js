@@ -18,5 +18,13 @@ async function like(req, res) {
   res.send(response);
 }
 
-const postController = { publishPost, getPosts, like };
+async function updatePost(req, res) {
+  const { postId } = req.params;
+  const { content } = req.body;
+  const { userId } = res.locals;
+  await postService.updatePost({ postId, content, userId });
+  res.sendStatus(200);
+}
+
+const postController = { publishPost, getPosts, like, updatePost };
 export default postController;

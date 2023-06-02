@@ -31,7 +31,7 @@ async function publishPost(url, content, userId) {
       }
     }
   };
-  
+
   await withTransaction(publishPostWithTransaction);
 }
 
@@ -46,5 +46,32 @@ async function like({ postId, userId }) {
   return { isLiked: active };
 }
 
-const postService = { publishPost, getPosts, like };
+async function updatePost({ postId, content, userId }) {
+  const post = await postRepository.getPostById(postId);
+  if (post.rows[0].user_id !== userId) {
+    throw new Error("You are not allowed to edit this post");
+  }
+
+  let hashtags;
+  if (content) {
+    hashtags = extractHashtags(content);
+  }
+
+  await postRepository.deletePostHashtags(postId);
+
+  const editPostWithTransaction = async (client) => {
+    await postRepository.updatePost({ postId, content, userId }, client);
+    if (hashtags) {
+      for (const hashtag of hashtags) {
+        await postRepository.createHashtag(hashtag, postId, client);
+      }
+    }
+  };
+
+
+  await withTransaction(editPostWithTransaction);
+}
+
+
+const postService = { publishPost, getPosts, like, updatePost };
 export default postService;

@@ -9,5 +9,6 @@ const postRouter = Router();
 postRouter.post("/post", validateSchema(postSchema.publishPost), authValidation, postController.publishPost)
 postRouter.post("/post/like/:postId", authValidation, postController.like)
 postRouter.get("/posts", authValidation, postController.getPosts)
+postRouter.put("/post/:postId", validateSchema(postSchema.editPost), authValidation, postController.updatePost)
 
 export default postRouter;
