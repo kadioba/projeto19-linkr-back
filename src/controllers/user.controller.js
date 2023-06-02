@@ -20,5 +20,10 @@ async function getUser(req, res) {
   res.send(user.rows[0]);
 }
 
-const userController = { signUp, signIn, signOut, getUser };
+async function searchUsers(req, res){
+  const result = await userService.searchUsers(req.query.searchText);
+  res.send(result.rows);
+}
+
+const userController = { signUp, signIn, signOut, getUser, searchUsers };
 export default userController;

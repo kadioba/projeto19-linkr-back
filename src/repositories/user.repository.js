@@ -36,5 +36,10 @@ async function findUserById(userId) {
   return await db.query(`SELECT id, email, picture, username, created_at FROM users WHERE id = $1;`, [userId]);
 }
 
-const userRepository = { createUser, findUserByEmail, createSession, findUserByToken, signOutUser, findUserById };
+async function searchUsers(searchText) {
+  const searchTerm = `%${searchText}%`;
+  return await db.query(`SELECT id, picture, username FROM users WHERE username ILIKE $1`, [searchTerm]);
+}
+
+const userRepository = { createUser, findUserByEmail, createSession, findUserByToken, signOutUser, findUserById, searchUsers };
 export default userRepository;
