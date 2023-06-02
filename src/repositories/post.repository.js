@@ -88,7 +88,6 @@ async function getPostById(postId, client = db) {
 }
 
 async function deletePostHashtags(postId, client = db) {
-  // Primeiro, exclua as relações post-hashtag e retorne os IDs das hashtags
   const deletedHashtagIdsResult = await client.query(
     `
     DELETE FROM posts_hashtags
@@ -100,7 +99,6 @@ async function deletePostHashtags(postId, client = db) {
 
   const deletedHashtagIds = deletedHashtagIdsResult.rows.map(row => row.hashtag_id);
 
-  // Agora, para cada hashtag excluída, verifique se ela ainda está ligada a algum post
   for (const hashtagId of deletedHashtagIds) {
     await client.query(
       `
