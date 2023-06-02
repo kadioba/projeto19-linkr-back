@@ -107,5 +107,52 @@ async function like({ userId, postId }, client = db) {
   );
 }
 
-const postRepository = { createPost, getPosts, getPostsById, createHashtag, like };
+async function getPostById(postId, client = db) {
+  return await client.query(
+    `
+    SELECT * FROM posts WHERE id = $1;
+  `,
+    [postId]
+  );
+}
+
+async function deletePostHashtags(postId, client = db) {
+  const deletedHashtagIdsResult = await client.query(
+    `
+    DELETE FROM posts_hashtags
+    WHERE post_id = $1
+    RETURNING hashtag_id
+    `,
+    [postId]
+  );
+
+  const deletedHashtagIds = deletedHashtagIdsResult.rows.map(row => row.hashtag_id);
+
+  for (const hashtagId of deletedHashtagIds) {
+    await client.query(
+      `
+      DELETE FROM hashtags
+      WHERE id = $1 AND NOT EXISTS (
+        SELECT 1 FROM posts_hashtags
+        WHERE hashtag_id = $1
+      );
+      `,
+      [hashtagId]
+    );
+  }
+}
+
+async function updatePost({ postId, content, userId }, client = db) {
+  await client.query(
+    `
+    UPDATE posts
+    SET content = $1
+    WHERE id = $2 AND user_id = $3;
+  `,
+    [content, postId, userId]
+  );
+}
+
+
+const postRepository = { createPost, getPosts, createHashtag, like, getPostById, deletePostHashtags, updatePost };
 export default postRepository;
