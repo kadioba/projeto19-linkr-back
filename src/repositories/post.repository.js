@@ -21,7 +21,34 @@ async function createPost({ url, content, userId }, data, client = db) {
 }
 
 async function getPosts(client = db) {
-  return await client.query(`
+  const likedByObject = `
+    SELECT
+      posts.id,
+      posts.content,
+      posts.url,
+      posts.created_at,
+      posts.url_title,
+      posts.url_description,
+      posts.url_picture,
+      users.id AS user_id,
+      users.picture,
+      users.username,
+      (
+        SELECT COALESCE(
+          json_object_agg(likes.user_id, liked_users.username),
+          '{}'::json
+        )
+        FROM likes
+        LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
+        WHERE likes.post_id = posts.id AND likes.active = true
+      ) AS liked_by
+    FROM posts
+    JOIN users ON posts.user_id = users.id
+    ORDER BY posts.created_at DESC
+    LIMIT 20;
+  `;
+
+  const likedByUserIdsAndUsernames = `
     SELECT
       posts.id,
       posts.content,
@@ -45,11 +72,85 @@ async function getPosts(client = db) {
     ORDER BY
       posts.created_at DESC
     LIMIT 20;
-  `);
+  `;
+
+  const likedByArrayOfObjects = `
+    SELECT
+      posts.id,
+      posts.content,
+      posts.url,
+      posts.created_at,
+      posts.url_title,
+      posts.url_description,
+      posts.url_picture,
+      users.id AS user_id,
+      users.picture,
+      users.username,
+      (
+        SELECT COALESCE(
+          json_agg(json_build_object(likes.user_id::text, liked_users.username)),
+          '[]'::json
+        )
+        FROM likes
+        LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
+        WHERE likes.post_id = posts.id AND likes.active = true
+          AND likes.user_id IS NOT NULL AND liked_users.username IS NOT NULL
+      ) AS liked_by
+    FROM posts
+    JOIN users ON posts.user_id = users.id
+    ORDER BY posts.created_at DESC
+    LIMIT 20;
+  `;
+
+  const likedByArrayOfObjectsWithProperties = `
+    SELECT
+        posts.id,
+        posts.content,
+        posts.url,
+        posts.created_at,
+        posts.url_title,
+        posts.url_description,
+        posts.url_picture,
+        users.id AS user_id,
+        users.picture,
+        users.username,
+        (
+            SELECT
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'id',
+                            likes.user_id,
+                            'username',
+                            liked_users.username
+                        )
+                    ),
+                    '[]' :: json
+                )
+            FROM likes
+            LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
+            WHERE
+                likes.post_id = posts.id
+                AND likes.active = true
+        ) AS liked_by
+    FROM posts
+    JOIN users ON posts.user_id = users.id
+    ORDER BY posts.created_at DESC
+    LIMIT 20;
+  `;
+  const option = [
+    likedByObject,
+    likedByUserIdsAndUsernames,
+    likedByArrayOfObjects,
+    likedByArrayOfObjectsWithProperties,
+  ];
+  
+  return await client.query(option[0]);
 }
 
-async function getPostsById(id, client=db){
-  return await client.query(`
+async function getPostsById(id, client = db) {
+  return await client.query(
+    `
     SELECT
       posts.id,
       posts.content,
@@ -74,7 +175,9 @@ async function getPostsById(id, client=db){
       posts.id, users.id
     ORDER BY
       posts.created_at DESC;
-  `, [id]);
+  `,
+    [id]
+  );
 }
 
 async function createHashtag(name, postId, client = db) {
@@ -126,7 +229,7 @@ async function deletePostHashtags(postId, client = db) {
     [postId]
   );
 
-  const deletedHashtagIds = deletedHashtagIdsResult.rows.map(row => row.hashtag_id);
+  const deletedHashtagIds = deletedHashtagIdsResult.rows.map((row) => row.hashtag_id);
 
   for (const hashtagId of deletedHashtagIds) {
     await client.query(
@@ -153,6 +256,14 @@ async function updatePost({ postId, content, userId }, client = db) {
   );
 }
 
-
-const postRepository = { createPost, getPosts, createHashtag, like, getPostById, getPostsById, deletePostHashtags, updatePost };
+const postRepository = {
+  createPost,
+  getPosts,
+  createHashtag,
+  like,
+  getPostById,
+  getPostsById,
+  deletePostHashtags,
+  updatePost,
+};
 export default postRepository;
