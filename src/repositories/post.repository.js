@@ -21,7 +21,7 @@ async function createPost({ url, content, userId }, data, client = db) {
 }
 
 async function getPosts(client = db) {
-  const likedByObject = `
+  return await client.query(`
     SELECT
       posts.id,
       posts.content,
@@ -46,106 +46,7 @@ async function getPosts(client = db) {
     JOIN users ON posts.user_id = users.id
     ORDER BY posts.created_at DESC
     LIMIT 20;
-  `;
-
-  const likedByUserIdsAndUsernames = `
-    SELECT
-      posts.id,
-      posts.content,
-      posts.url,
-      posts.created_at,
-      posts.url_title,
-      posts.url_description,
-      posts.url_picture,
-      users.id AS user_id,
-      users.picture,
-      users.username,
-      array_remove(ARRAY_AGG(likes.user_id), NULL) AS liked_by_user_ids,
-      array_remove(ARRAY_AGG(liked_users.username), NULL) AS liked_by_usernames
-    FROM
-      posts
-      JOIN users ON posts.user_id = users.id
-      LEFT JOIN likes ON posts.id = likes.post_id AND likes.active = true
-      LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
-    GROUP BY
-      posts.id, users.id
-    ORDER BY
-      posts.created_at DESC
-    LIMIT 20;
-  `;
-
-  const likedByArrayOfObjects = `
-    SELECT
-      posts.id,
-      posts.content,
-      posts.url,
-      posts.created_at,
-      posts.url_title,
-      posts.url_description,
-      posts.url_picture,
-      users.id AS user_id,
-      users.picture,
-      users.username,
-      (
-        SELECT COALESCE(
-          json_agg(json_build_object(likes.user_id::text, liked_users.username)),
-          '[]'::json
-        )
-        FROM likes
-        LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
-        WHERE likes.post_id = posts.id AND likes.active = true
-          AND likes.user_id IS NOT NULL AND liked_users.username IS NOT NULL
-      ) AS liked_by
-    FROM posts
-    JOIN users ON posts.user_id = users.id
-    ORDER BY posts.created_at DESC
-    LIMIT 20;
-  `;
-
-  const likedByArrayOfObjectsWithProperties = `
-    SELECT
-        posts.id,
-        posts.content,
-        posts.url,
-        posts.created_at,
-        posts.url_title,
-        posts.url_description,
-        posts.url_picture,
-        users.id AS user_id,
-        users.picture,
-        users.username,
-        (
-            SELECT
-                COALESCE(
-                    json_agg(
-                        json_build_object(
-                            'id',
-                            likes.user_id,
-                            'username',
-                            liked_users.username
-                        )
-                    ),
-                    '[]' :: json
-                )
-            FROM likes
-            LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
-            WHERE
-                likes.post_id = posts.id
-                AND likes.active = true
-        ) AS liked_by
-    FROM posts
-    JOIN users ON posts.user_id = users.id
-    ORDER BY posts.created_at DESC
-    LIMIT 20;
-  `;
-  const option = [
-    likedByObject,
-    likedByUserIdsAndUsernames,
-    likedByArrayOfObjects,
-    likedByArrayOfObjectsWithProperties,
-  ];
-  
-  return await client.query(option[0]);
+  `);
 }
 
 async function getPostsById(id, client = db) {
@@ -162,17 +63,20 @@ async function getPostsById(id, client = db) {
       users.id AS user_id,
       users.picture,
       users.username,
-      array_remove(ARRAY_AGG(likes.user_id), NULL) AS liked_by_user_ids,
-      array_remove(ARRAY_AGG(liked_users.username), NULL) AS liked_by_usernames
+      (
+        SELECT COALESCE(
+          json_object_agg(likes.user_id, liked_users.username),
+          '{}'::json
+        )
+        FROM likes
+        LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
+        WHERE likes.post_id = posts.id AND likes.active = true
+      ) AS liked_by
     FROM
       posts
       JOIN users ON posts.user_id = users.id
-      LEFT JOIN likes ON posts.id = likes.post_id AND likes.active = true
-      LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
     WHERE
       users.id = $1
-    GROUP BY
-      posts.id, users.id
     ORDER BY
       posts.created_at DESC;
   `,
