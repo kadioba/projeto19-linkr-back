@@ -26,5 +26,12 @@ async function updatePost(req, res) {
   res.sendStatus(200);
 }
 
-const postController = { publishPost, getPosts, like, updatePost };
+async function deletePost(req, res) {
+  const { postId } = req.params;
+  const { userId } = res.locals;
+  await postService.deletePost({ postId, userId });
+  res.sendStatus(200);
+}
+
+const postController = { publishPost, getPosts, like, updatePost, deletePost };
 export default postController;

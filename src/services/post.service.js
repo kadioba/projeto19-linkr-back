@@ -72,6 +72,18 @@ async function updatePost({ postId, content, userId }) {
   await withTransaction(editPostWithTransaction);
 }
 
+async function deletePost({ postId, userId }) {
+  const post = await postRepository.getPostById(postId);
+  if (post.rows[0].user_id !== userId) {
+    throw new Error("You are not allowed to delete this post");
+  }
 
-const postService = { publishPost, getPosts, like, updatePost };
+  console.log(postId);
+
+  await postRepository.deletePostHashtags(postId);
+  await postRepository.deletePost(postId, userId);
+}
+
+
+const postService = { publishPost, getPosts, like, updatePost, deletePost };
 export default postService;
