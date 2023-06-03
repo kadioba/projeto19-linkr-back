@@ -33,14 +33,19 @@ function getPostsByHashtag(hashtag) {
         users.username,
         users.picture,
         array_agg(hashtags.name) as hashtags,
-        array_remove(ARRAY_AGG(likes.user_id), NULL) AS liked_by_user_ids,
-        array_remove(ARRAY_AGG(liked_users.username), NULL) AS liked_by_usernames
+        (
+            SELECT COALESCE(
+                json_object_agg(likes.user_id, liked_users.username),
+                '{}'::json
+            )
+            FROM likes
+            LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
+            WHERE likes.post_id = posts.id AND likes.active = true
+        ) AS liked_by
     FROM posts
         JOIN users ON posts.user_id = users.id
         JOIN posts_hashtags ON posts.id = posts_hashtags.post_id
         JOIN hashtags ON posts_hashtags.hashtag_id = hashtags.id
-        LEFT JOIN likes ON posts.id = likes.post_id AND likes.active = true
-        LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
     GROUP BY posts.id, users.id
     HAVING $1 = ANY(array_agg(hashtags.name))
     ORDER BY posts.created_at DESC
