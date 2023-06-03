@@ -40,6 +40,11 @@ async function getPosts() {
   return posts;
 }
 
+async function getPostsById(id) {
+  const posts = await postRepository.getPostsById(id);
+  return posts;
+}
+
 async function like({ postId, userId }) {
   const response = await postRepository.like({ postId, userId });
   const { active } = response.rows[0];
@@ -78,12 +83,10 @@ async function deletePost({ postId, userId }) {
     throw new Error("You are not allowed to delete this post");
   }
 
-  console.log(postId);
 
   await postRepository.deletePostHashtags(postId);
   await postRepository.deletePost(postId, userId);
 }
 
-
-const postService = { publishPost, getPosts, like, updatePost, deletePost };
+const postService = { publishPost, getPosts, getPostsById, like, updatePost, deletePost };
 export default postService;

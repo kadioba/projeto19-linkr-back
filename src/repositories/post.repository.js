@@ -33,19 +33,55 @@ async function getPosts(client = db) {
       users.id AS user_id,
       users.picture,
       users.username,
-      array_remove(ARRAY_AGG(likes.user_id), NULL) AS liked_by_user_ids,
-      array_remove(ARRAY_AGG(liked_users.username), NULL) AS liked_by_usernames
+      (
+        SELECT COALESCE(
+          json_object_agg(likes.user_id, liked_users.username),
+          '{}'::json
+        )
+        FROM likes
+        LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
+        WHERE likes.post_id = posts.id AND likes.active = true
+      ) AS liked_by
+    FROM posts
+    JOIN users ON posts.user_id = users.id
+    ORDER BY posts.created_at DESC
+    LIMIT 20;
+  `);
+}
+
+async function getPostsById(id, client = db) {
+  return await client.query(
+    `
+    SELECT
+      posts.id,
+      posts.content,
+      posts.url,
+      posts.created_at,
+      posts.url_title,
+      posts.url_description,
+      posts.url_picture,
+      users.id AS user_id,
+      users.picture,
+      users.username,
+      (
+        SELECT COALESCE(
+          json_object_agg(likes.user_id, liked_users.username),
+          '{}'::json
+        )
+        FROM likes
+        LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
+        WHERE likes.post_id = posts.id AND likes.active = true
+      ) AS liked_by
     FROM
       posts
       JOIN users ON posts.user_id = users.id
-      LEFT JOIN likes ON posts.id = likes.post_id AND likes.active = true
-      LEFT JOIN users AS liked_users ON likes.user_id = liked_users.id
-    GROUP BY
-      posts.id, users.id
+    WHERE
+      users.id = $1
     ORDER BY
-      posts.created_at DESC
-    LIMIT 20;
-  `);
+      posts.created_at DESC;
+  `,
+    [id]
+  );
 }
 
 async function createHashtag(name, postId, client = db) {
@@ -97,7 +133,7 @@ async function deletePostHashtags(postId, client = db) {
     [postId]
   );
 
-  const deletedHashtagIds = deletedHashtagIdsResult.rows.map(row => row.hashtag_id);
+  const deletedHashtagIds = deletedHashtagIdsResult.rows.map((row) => row.hashtag_id);
 
   for (const hashtagId of deletedHashtagIds) {
     await client.query(
@@ -134,6 +170,15 @@ async function deletePost(postId, userId, client = db) {
   );
 }
 
-
-const postRepository = { createPost, getPosts, createHashtag, like, getPostById, deletePostHashtags, updatePost, deletePost };
+const postRepository = {
+  createPost,
+  getPosts,
+  createHashtag,
+  like,
+  getPostById,
+  getPostsById,
+  deletePostHashtags,
+  updatePost,
+  deletePost
+};
 export default postRepository;

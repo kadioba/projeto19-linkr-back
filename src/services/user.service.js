@@ -33,5 +33,9 @@ async function getUser(userId) {
   return await userRepository.findUserById(userId);
 }
 
-const userService = { signUp, signIn, signOut, getUser };
+async function searchUsers(searchText){
+  return await userRepository.searchUsers(searchText);
+}
+
+const userService = { signUp, signIn, signOut, getUser, searchUsers };
 export default userService;

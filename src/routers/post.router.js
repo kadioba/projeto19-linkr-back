@@ -11,5 +11,6 @@ postRouter.post("/post/like/:postId", authValidation, postController.like)
 postRouter.get("/posts", authValidation, postController.getPosts)
 postRouter.put("/post/:postId", validateSchema(postSchema.editPost), authValidation, postController.updatePost)
 postRouter.delete("/post/:postId", authValidation, postController.deletePost)
+postRouter.get("/posts/:id", authValidation, postController.getPostsById);
 
 export default postRouter;
