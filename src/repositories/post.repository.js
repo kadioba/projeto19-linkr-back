@@ -154,5 +154,5 @@ async function updatePost({ postId, content, userId }, client = db) {
 }
 
 
-const postRepository = { createPost, getPosts, createHashtag, like, getPostById, deletePostHashtags, updatePost };
+const postRepository = { createPost, getPosts, createHashtag, like, getPostById, getPostsById, deletePostHashtags, updatePost };
 export default postRepository;
