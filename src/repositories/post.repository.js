@@ -160,6 +160,16 @@ async function updatePost({ postId, content, userId }, client = db) {
   );
 }
 
+async function deletePost(postId, userId, client = db) {
+  await client.query(
+    `
+    DELETE FROM posts
+    WHERE id = $1 AND user_id = $2;
+  `,
+    [postId, userId]
+  );
+}
+
 const postRepository = {
   createPost,
   getPosts,
@@ -169,5 +179,6 @@ const postRepository = {
   getPostsById,
   deletePostHashtags,
   updatePost,
+  deletePost
 };
 export default postRepository;
