@@ -161,6 +161,15 @@ async function updatePost({ postId, content, userId }, client = db) {
 }
 
 async function deletePost(postId, userId, client = db) {
+
+  await client.query(
+    `
+    DELETE FROM likes
+    WHERE post_id = $1;
+  `,
+    [postId]
+  );
+  
   await client.query(
     `
     DELETE FROM posts

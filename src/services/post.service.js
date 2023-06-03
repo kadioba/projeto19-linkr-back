@@ -73,7 +73,6 @@ async function updatePost({ postId, content, userId }) {
     }
   };
 
-
   await withTransaction(editPostWithTransaction);
 }
 
@@ -83,9 +82,11 @@ async function deletePost({ postId, userId }) {
     throw new Error("You are not allowed to delete this post");
   }
 
-
-  await postRepository.deletePostHashtags(postId);
-  await postRepository.deletePost(postId, userId);
+  const deletePostWithTransaction = async (client) => {
+    await postRepository.deletePostHashtags(postId, client);
+    await postRepository.deletePost(postId, userId, client);
+  };
+  await withTransaction(deletePostWithTransaction);
 }
 
 const postService = { publishPost, getPosts, getPostsById, like, updatePost, deletePost };
