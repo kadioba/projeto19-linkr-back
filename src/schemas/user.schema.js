@@ -2,8 +2,8 @@ import joi from "joi";
 
 const signUp = joi.object({
   email: joi.string().trim().email().required(),
-  password: joi.string().trim().required(),
-  username: joi.string().trim().required(),
+  password: joi.string().trim().min(3).required(),
+  username: joi.string().trim().min(3).required(),
   picture: joi
     .string()
     .uri({ scheme: ["http", "https"] })
