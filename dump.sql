@@ -57,7 +57,8 @@ ALTER SEQUENCE public.hashtags_id_seq OWNED BY public.hashtags.id;
 CREATE TABLE public.likes (
     id integer NOT NULL,
     user_id integer NOT NULL,
-    post_id integer NOT NULL
+    post_id integer NOT NULL,
+    active boolean DEFAULT true NOT NULL
 );
 
 
@@ -93,7 +94,7 @@ CREATE TABLE public.posts (
     url_title text NOT NULL,
     url_description text NOT NULL,
     url_picture text NOT NULL,
-    created_at timestamp with time zone DEFAULT '2023-06-01 01:05:08.387896-03'::timestamp with time zone NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -190,7 +191,7 @@ CREATE TABLE public.users (
     password text NOT NULL,
     picture text NOT NULL,
     username text NOT NULL,
-    created_at timestamp with time zone DEFAULT '2023-06-01 01:05:08.342745-03'::timestamp with time zone NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -356,6 +357,14 @@ ALTER TABLE ONLY public.hashtags
 
 ALTER TABLE ONLY public.likes
     ADD CONSTRAINT likes_pk PRIMARY KEY (id);
+
+
+--
+-- Name: likes likes_user_post_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.likes
+    ADD CONSTRAINT likes_user_post_unique UNIQUE (user_id, post_id);
 
 
 --
