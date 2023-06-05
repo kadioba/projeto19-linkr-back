@@ -15,9 +15,10 @@ if (process.env.MODE === "prod") configDatabase.ssl = true;
 
 const db = new Pool(configDatabase);
 
-db.query('SELECT NOW()', (err, res) => {
-  if(err) console.log(err)
-  console.log(res.rows[0])
-})
+db.query(`SELECT '🐘 PostgreSQL - ' || TO_CHAR(NOW(), 'HH24:MI:SS DD/MM/YYYY') AS output`, (err, res) => {
+  if (err) console.log(err) || process.exit(1);
+  const { output } = res.rows[0];
+  console.log(output);
+});
 
-export default db;  
+export default db;
