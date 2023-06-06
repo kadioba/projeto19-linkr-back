@@ -20,6 +20,13 @@ async function createPost({ url, content, userId }, data, client = db) {
   return result.rows[0].id;
 }
 
+async function repost({ postId, userId }, client = db) {
+  return await client.query(`
+  INSERT INTO reposts (post_id, reposter_user_id)
+  VALUES ($1, $2) 
+  `, [postId, userId])
+}
+
 async function getPosts(page, client = db) {
   const offset = (page - 1) * 10;
   return await client.query(`
@@ -171,7 +178,7 @@ async function deletePost(postId, userId, client = db) {
   `,
     [postId]
   );
-  
+
   await client.query(
     `
     DELETE FROM posts
@@ -183,6 +190,7 @@ async function deletePost(postId, userId, client = db) {
 
 const postRepository = {
   createPost,
+  repost,
   getPosts,
   createHashtag,
   like,
