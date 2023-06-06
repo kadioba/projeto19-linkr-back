@@ -30,29 +30,107 @@ async function repost({ postId, userId }, client = db) {
 async function getPosts(page, client = db) {
   const offset = (page - 1) * 10;
   return await client.query(`
-    SELECT
-      posts.id,
-      posts.content,
-      posts.url,
-      posts.created_at,
-      posts.url_title,
-      posts.url_description,
-      posts.url_picture,
-      users.id AS user_id,
-      users.picture,
-      users.username,
-      (
-        SELECT COALESCE(
-          json_object_agg(likes.user_id, liked_users.username),
-          '{}'::json
-        )
-        FROM likes
-        LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
-        WHERE likes.post_id = posts.id AND likes.active = true
-      ) AS liked_by
-    FROM posts
-    JOIN users ON posts.user_id = users.id
-    ORDER BY posts.created_at DESC
+    WITH original_posts AS (
+      SELECT
+        posts.id,
+        posts.content,
+        posts.url,
+        posts.created_at,
+        posts.url_title,
+        posts.url_description,
+        posts.url_picture,
+        users.id AS user_id,
+        users.picture,
+        users.username,
+        (
+          SELECT COALESCE(
+            json_object_agg(likes.user_id, liked_users.username),
+            '{}'::json
+          )
+          FROM likes
+          LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
+          WHERE likes.post_id = posts.id AND likes.active = true
+        ) AS liked_by,
+        NULL::integer as reposter_user_id,
+        NULL::text as reposter_username, 
+        NULL::integer as repost_id
+      FROM posts
+      JOIN users ON posts.user_id = users.id
+    ),
+    reposted_posts AS (
+      SELECT
+        posts.id,
+        posts.content,
+        posts.url,
+        reposts.created_at,
+        posts.url_title,
+        posts.url_description,
+        posts.url_picture,
+        users.id AS user_id,
+        users.picture,
+        users.username,
+        (
+          SELECT COALESCE(
+            json_object_agg(likes.user_id, liked_users.username),
+            '{}'::json
+          )
+          FROM likes
+          LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
+          WHERE likes.post_id = posts.id AND likes.active = true
+        ) AS liked_by,
+        reposts.reposter_user_id,
+        reposting_users.username AS reposter_username, 
+        reposts.id as repost_id
+      FROM posts
+      JOIN reposts ON posts.id = reposts.post_id
+      JOIN users ON posts.user_id = users.id
+      JOIN users AS reposting_users ON reposts.reposter_user_id = reposting_users.id
+    ),
+    repost_counts AS (
+      SELECT
+        post_id,
+        COUNT(*) as repost_count
+      FROM reposts
+      GROUP BY post_id
+    )
+    SELECT 
+      original_posts.id,
+      original_posts.content,
+      original_posts.url,
+      original_posts.created_at,
+      original_posts.url_title,
+      original_posts.url_description,
+      original_posts.url_picture,
+      original_posts.user_id,
+      original_posts.picture,
+      original_posts.username,
+      original_posts.liked_by,
+      original_posts.repost_id,
+      original_posts.reposter_user_id,
+      original_posts.reposter_username,
+      COALESCE(repost_counts.repost_count, 0) as repost_count
+    FROM original_posts
+    LEFT JOIN repost_counts ON original_posts.id = repost_counts.post_id
+    UNION ALL
+    SELECT 
+      reposted_posts.id,
+      reposted_posts.content,
+      reposted_posts.url,
+      reposted_posts.created_at,
+      reposted_posts.url_title,
+      reposted_posts.url_description,
+      reposted_posts.url_picture,
+      reposted_posts.user_id,
+      reposted_posts.picture,
+      reposted_posts.username,
+      reposted_posts.liked_by,
+      reposted_posts.repost_id,
+      reposted_posts.reposter_user_id,
+      reposted_posts.reposter_username,
+      COALESCE(repost_counts.repost_count, 0) as repost_count
+    FROM reposted_posts
+    LEFT JOIN repost_counts ON reposted_posts.id = repost_counts.post_id
+    ORDER BY created_at DESC  
     OFFSET $1
     LIMIT 10;
   `, [offset]);
