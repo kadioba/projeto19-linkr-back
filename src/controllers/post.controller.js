@@ -7,12 +7,13 @@ async function publishPost(req, res) {
 }
 
 async function getPosts(req, res) {
-  const posts = await postService.getPosts();
+  const page = req.query.page ? parseInt(req.query.page) : 1;
+  const posts = await postService.getPosts(page);
   res.send(posts.rows);
 }
 
 async function getPostsById(req, res) {
-  const {id} = req.params;
+  const { id } = req.params;
   const posts = await postService.getPostsById(id);
   res.send(posts.rows);
 }

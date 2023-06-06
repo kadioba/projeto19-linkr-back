@@ -35,8 +35,8 @@ async function publishPost(url, content, userId) {
   await withTransaction(publishPostWithTransaction);
 }
 
-async function getPosts() {
-  const posts = await postRepository.getPosts();
+async function getPosts(page) {
+  const posts = await postRepository.getPosts(page);
   return posts;
 }
 

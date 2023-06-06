@@ -21,6 +21,71 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: comments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.comments (
+    id integer NOT NULL,
+    content text NOT NULL,
+    commented_user_id integer NOT NULL,
+    post_id integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: comments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.comments_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.comments_id_seq OWNED BY public.comments.id;
+
+
+--
+-- Name: followers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.followers (
+    id integer NOT NULL,
+    follower_id integer NOT NULL,
+    followed_id integer NOT NULL,
+    active boolean DEFAULT true NOT NULL
+);
+
+
+--
+-- Name: followers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.followers_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: followers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.followers_id_seq OWNED BY public.followers.id;
+
+
+--
 -- Name: hashtags; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -150,6 +215,38 @@ ALTER SEQUENCE public.posts_id_seq OWNED BY public.posts.id;
 
 
 --
+-- Name: reposts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.reposts (
+    id integer NOT NULL,
+    reposter_user_id integer NOT NULL,
+    post_id integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: reposts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.reposts_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: reposts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.reposts_id_seq OWNED BY public.reposts.id;
+
+
+--
 -- Name: sessions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -216,6 +313,20 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: comments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments ALTER COLUMN id SET DEFAULT nextval('public.comments_id_seq'::regclass);
+
+
+--
+-- Name: followers id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.followers ALTER COLUMN id SET DEFAULT nextval('public.followers_id_seq'::regclass);
+
+
+--
 -- Name: hashtags id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -244,6 +355,13 @@ ALTER TABLE ONLY public.posts_hashtags ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: reposts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reposts ALTER COLUMN id SET DEFAULT nextval('public.reposts_id_seq'::regclass);
+
+
+--
 -- Name: sessions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -255,6 +373,18 @@ ALTER TABLE ONLY public.sessions ALTER COLUMN id SET DEFAULT nextval('public.ses
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Data for Name: comments; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: followers; Type: TABLE DATA; Schema: public; Owner: -
+--
+
 
 
 --
@@ -282,6 +412,12 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 
 --
+-- Data for Name: reposts; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
 -- Data for Name: sessions; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -291,6 +427,20 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+
+
+--
+-- Name: comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.comments_id_seq', 1, false);
+
+
+--
+-- Name: followers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.followers_id_seq', 1, false);
 
 
 --
@@ -322,6 +472,13 @@ SELECT pg_catalog.setval('public.posts_id_seq', 1, false);
 
 
 --
+-- Name: reposts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.reposts_id_seq', 1, false);
+
+
+--
 -- Name: sessions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -333,6 +490,22 @@ SELECT pg_catalog.setval('public.sessions_id_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+
+
+--
+-- Name: comments comments_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_pk PRIMARY KEY (id);
+
+
+--
+-- Name: followers followers_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.followers
+    ADD CONSTRAINT followers_pk PRIMARY KEY (id);
 
 
 --
@@ -384,6 +557,14 @@ ALTER TABLE ONLY public.posts
 
 
 --
+-- Name: reposts reposts_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reposts
+    ADD CONSTRAINT reposts_pk PRIMARY KEY (id);
+
+
+--
 -- Name: sessions sessions_pk; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -405,6 +586,38 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pk PRIMARY KEY (id);
+
+
+--
+-- Name: comments comments_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_fk0 FOREIGN KEY (commented_user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: comments comments_fk1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_fk1 FOREIGN KEY (post_id) REFERENCES public.posts(id);
+
+
+--
+-- Name: followers followers_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.followers
+    ADD CONSTRAINT followers_fk0 FOREIGN KEY (follower_id) REFERENCES public.users(id);
+
+
+--
+-- Name: followers followers_fk1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.followers
+    ADD CONSTRAINT followers_fk1 FOREIGN KEY (followed_id) REFERENCES public.users(id);
 
 
 --
@@ -445,6 +658,22 @@ ALTER TABLE ONLY public.posts_hashtags
 
 ALTER TABLE ONLY public.posts_hashtags
     ADD CONSTRAINT posts_hashtags_fk1 FOREIGN KEY (post_id) REFERENCES public.posts(id);
+
+
+--
+-- Name: reposts reposts_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reposts
+    ADD CONSTRAINT reposts_fk0 FOREIGN KEY (reposter_user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: reposts reposts_fk1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reposts
+    ADD CONSTRAINT reposts_fk1 FOREIGN KEY (post_id) REFERENCES public.posts(id);
 
 
 --
