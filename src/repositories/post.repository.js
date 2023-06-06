@@ -20,7 +20,8 @@ async function createPost({ url, content, userId }, data, client = db) {
   return result.rows[0].id;
 }
 
-async function getPosts(client = db) {
+async function getPosts(page, client = db) {
+  const offset = (page - 1) * 10;
   return await client.query(`
     SELECT
       posts.id,
@@ -45,8 +46,9 @@ async function getPosts(client = db) {
     FROM posts
     JOIN users ON posts.user_id = users.id
     ORDER BY posts.created_at DESC
-    LIMIT 20;
-  `);
+    OFFSET $1
+    LIMIT 10;
+  `, [offset]);
 }
 
 async function getPostsById(id, client = db) {
