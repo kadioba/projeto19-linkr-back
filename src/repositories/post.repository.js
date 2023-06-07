@@ -22,7 +22,8 @@ async function createPost({ url, content, userId }, data, client = db) {
 
 async function getPosts(page, client = db) {
   const offset = (page - 1) * 10;
-  return await client.query(`
+  return await client.query(
+    `
     SELECT
       posts.id,
       posts.content,
@@ -48,10 +49,13 @@ async function getPosts(page, client = db) {
     ORDER BY posts.created_at DESC
     OFFSET $1
     LIMIT 10;
-  `, [offset]);
+  `,
+    [offset]
+  );
 }
 
-async function getPostsById(id, client = db) {
+async function getPostsById(id, page, client = db) {
+  const offset = (page - 1) * 10;
   return await client.query(
     `
     SELECT
@@ -66,23 +70,28 @@ async function getPostsById(id, client = db) {
       users.picture,
       users.username,
       (
-        SELECT COALESCE(
-          json_object_agg(likes.user_id, liked_users.username),
-          '{}'::json
-        )
+        SELECT
+          COALESCE(
+            json_object_agg(
+              likes.user_id,
+              liked_users.username
+            ),
+            '{}' :: json
+          )
         FROM likes
         LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
-        WHERE likes.post_id = posts.id AND likes.active = true
+        WHERE likes.post_id = posts.id
+          AND likes.active = true
       ) AS liked_by
     FROM
       posts
       JOIN users ON posts.user_id = users.id
-    WHERE
-      users.id = $1
-    ORDER BY
-      posts.created_at DESC;
-  `,
-    [id]
+    WHERE users.id = $1
+    ORDER BY posts.created_at DESC
+    OFFSET $2
+    LIMIT 10;
+    `,
+    [id, offset]
   );
 }
 
@@ -163,7 +172,6 @@ async function updatePost({ postId, content, userId }, client = db) {
 }
 
 async function deletePost(postId, userId, client = db) {
-
   await client.query(
     `
     DELETE FROM likes
@@ -171,7 +179,7 @@ async function deletePost(postId, userId, client = db) {
   `,
     [postId]
   );
-  
+
   await client.query(
     `
     DELETE FROM posts
@@ -190,6 +198,6 @@ const postRepository = {
   getPostsById,
   deletePostHashtags,
   updatePost,
-  deletePost
+  deletePost,
 };
 export default postRepository;
