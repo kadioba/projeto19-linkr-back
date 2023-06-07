@@ -44,8 +44,8 @@ async function getPosts(page) {
   return posts;
 }
 
-async function getPostsById(id) {
-  const posts = await postRepository.getPostsById(id);
+async function getPostsById(id, page) {
+  const posts = await postRepository.getPostsById(id, page);
   return posts;
 }
 

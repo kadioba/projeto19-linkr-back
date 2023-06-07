@@ -1,20 +1,20 @@
-import hashtagRepository from "../repositories/hashtag.repository.js"
+import hashtagRepository from "../repositories/hashtag.repository.js";
 
 async function getTrendingHashtags() {
-    const {rows: trendingHashtags} = await hashtagRepository.getTrendingHashtags()
+  const { rows: trendingHashtags } = await hashtagRepository.getTrendingHashtags();
 
-    return trendingHashtags
+  return trendingHashtags;
 }
 
-async function getPostsByHashtag(hashtag){
-    const {rows: postsByHashtag} = await hashtagRepository.getPostsByHashtag(hashtag)
+async function getPostsByHashtag(hashtag, page) {
+  const { rows: postsByHashtag } = await hashtagRepository.getPostsByHashtag(hashtag, page);
 
-    return postsByHashtag
+  return postsByHashtag;
 }
 
 const hashtagService = {
-    getTrendingHashtags,
-    getPostsByHashtag
-}
+  getTrendingHashtags,
+  getPostsByHashtag,
+};
 
-export default hashtagService
+export default hashtagService;

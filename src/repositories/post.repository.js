@@ -159,15 +159,54 @@ async function getPostsById(id, client = db) {
         LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
         WHERE likes.post_id = posts.id AND likes.active = true
       ) AS liked_by
+    FROM posts
+    JOIN users ON posts.user_id = users.id
+    LEFT JOIN followers ON (posts.user_id = followers.followed_id AND followers.follower_id = $1 AND followers.active = true)
+    WHERE posts.user_id = $1 OR followers.followed_id IS NOT NULL
+    ORDER BY posts.created_at DESC
+    OFFSET $2
+    LIMIT 10;
+  `, [userId, offset]);
+}
+
+async function getPostsById(id, page, client = db) {
+  const offset = (page - 1) * 10;
+  return await client.query(
+    `
+    SELECT
+      posts.id,
+      posts.content,
+      posts.url,
+      posts.created_at,
+      posts.url_title,
+      posts.url_description,
+      posts.url_picture,
+      users.id AS user_id,
+      users.picture,
+      users.username,
+      (
+        SELECT
+          COALESCE(
+            json_object_agg(
+              likes.user_id,
+              liked_users.username
+            ),
+            '{}' :: json
+          )
+        FROM likes
+        LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
+        WHERE likes.post_id = posts.id
+          AND likes.active = true
+      ) AS liked_by
     FROM
       posts
       JOIN users ON posts.user_id = users.id
-    WHERE
-      users.id = $1
-    ORDER BY
-      posts.created_at DESC;
-  `,
-    [id]
+    WHERE users.id = $1
+    ORDER BY posts.created_at DESC
+    OFFSET $2
+    LIMIT 10;
+    `,
+    [id, offset]
   );
 }
 
@@ -248,7 +287,6 @@ async function updatePost({ postId, content, userId }, client = db) {
 }
 
 async function deletePost(postId, userId, client = db) {
-
   await client.query(
     `
     DELETE FROM likes
@@ -276,6 +314,6 @@ const postRepository = {
   getPostsById,
   deletePostHashtags,
   updatePost,
-  deletePost
+  deletePost,
 };
 export default postRepository;

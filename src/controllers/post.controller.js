@@ -16,13 +16,15 @@ async function repost(req, res) {
 
 async function getPosts(req, res) {
   const page = req.query.page ? parseInt(req.query.page) : 1;
-  const posts = await postService.getPosts(page);
+  const { userId } = res.locals;
+  const posts = await postService.getPosts(page, userId);
   res.send(posts.rows);
 }
 
 async function getPostsById(req, res) {
+  const page = req.query.page ? parseInt(req.query.page) : 1;
   const { id } = req.params;
-  const posts = await postService.getPostsById(id);
+  const posts = await postService.getPostsById(id, page);
   res.send(posts.rows);
 }
 
