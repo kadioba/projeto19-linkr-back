@@ -6,15 +6,25 @@ async function publishPost(req, res) {
   res.sendStatus(201);
 }
 
+async function repost(req, res) {
+  const { postId } = req.params
+  const { userId } = res.locals;
+  await postService.repost({ postId, userId })
+  res.sendStatus(201);
+  // alterar para res.sendStatus(201);
+}
+
 async function getPosts(req, res) {
   const page = req.query.page ? parseInt(req.query.page) : 1;
-  const posts = await postService.getPosts(page);
+  const { userId } = res.locals;
+  const posts = await postService.getPosts(page, userId);
   res.send(posts.rows);
 }
 
 async function getPostsById(req, res) {
+  const page = req.query.page ? parseInt(req.query.page) : 1;
   const { id } = req.params;
-  const posts = await postService.getPostsById(id);
+  const posts = await postService.getPostsById(id, page);
   res.send(posts.rows);
 }
 
@@ -40,5 +50,5 @@ async function deletePost(req, res) {
   res.sendStatus(200);
 }
 
-const postController = { publishPost, getPosts, getPostsById, like, updatePost, deletePost };
+const postController = { publishPost, repost, getPosts, getPostsById, like, updatePost, deletePost };
 export default postController;

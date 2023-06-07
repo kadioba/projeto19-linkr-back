@@ -7,8 +7,8 @@ import commentsRouter from "./comments.router.js";
 const router = Router();
 
 router.use(usersRouter);
-router.use(postRouter)
-router.use(hashtagsRouter)
+router.use(postRouter);
+router.use(hashtagsRouter);
 router.use(commentsRouter)
 router.all("*", (_req, res) => res.status(404).send({ message: "Not Found" }));
 

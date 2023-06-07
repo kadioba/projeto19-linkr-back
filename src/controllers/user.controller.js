@@ -21,15 +21,30 @@ async function getUser(req, res) {
 }
 
 async function getUserById(req, res) {
-  const {id} = req.params;
+  const { id } = req.params;
   const user = await userService.getUser(id);
   res.send(user.rows[0]);
 }
 
-async function searchUsers(req, res){
+async function searchUsers(req, res) {
   const result = await userService.searchUsers(req.query.searchText);
   res.send(result.rows);
 }
 
-const userController = { signUp, signIn, signOut, getUser, searchUsers, getUserById };
+async function follow(req, res) {
+  const { followedId } = req.params;
+  const { userId } = res.locals;
+  const response = await userService.follow({followedId, userId });
+  res.send(response);
+}
+
+async function getUserDataWithPosts(req, res) {
+  const { id } = req.params;
+  const page = req.query.page ? parseInt(req.query.page) : 1;
+  const result = await userService.getUserDataWithPosts(id, page);
+  res.send(result);
+}
+
+const userController = { signUp, signIn, signOut, getUser, searchUsers, getUserById, getUserDataWithPosts, follow };
+
 export default userController;
