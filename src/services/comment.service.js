@@ -5,5 +5,10 @@ async function publishComment({ postId, content, userId }) {
     return comment;
 }
 
-const commentService = { publishComment };
+async function getCommentsByPostId(postId) {
+    const comments = await commentRepository.getCommentsByPostId(postId);
+    return comments;
+}
+
+const commentService = { publishComment, getCommentsByPostId };
 export default commentService;
