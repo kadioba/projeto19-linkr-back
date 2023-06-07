@@ -509,6 +509,14 @@ ALTER TABLE ONLY public.followers
 
 
 --
+-- Name: followers followers_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.followers
+    ADD CONSTRAINT followers_unique UNIQUE (follower_id, followed_id);
+
+
+--
 -- Name: hashtags hashtags_name_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
