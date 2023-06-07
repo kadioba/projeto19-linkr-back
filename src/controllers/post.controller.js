@@ -14,8 +14,9 @@ async function getPosts(req, res) {
 }
 
 async function getPostsById(req, res) {
+  const page = req.query.page ? parseInt(req.query.page) : 1;
   const { id } = req.params;
-  const posts = await postService.getPostsById(id);
+  const posts = await postService.getPostsById(id, page);
   res.send(posts.rows);
 }
 

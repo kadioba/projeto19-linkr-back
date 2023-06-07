@@ -1,7 +1,7 @@
 import db from "../configs/database.connection.js";
 
 function getTrendingHashtags() {
-    return db.query(`
+  return db.query(`
     SELECT
         posts_hashtags.hashtag_id,
         hashtags.name,
@@ -16,11 +16,13 @@ function getTrendingHashtags() {
         hashtag_counts DESC,
         hashtags.name ASC
     LIMIT 10;
-    `)
+    `);
 }
 
-function getPostsByHashtag(hashtag) {
-    return db.query(`
+function getPostsByHashtag(hashtag, page) {
+  const offset = (page - 1) * 10;
+  return db.query(
+    `
     SELECT
         posts.id,
         posts.content,
@@ -49,13 +51,16 @@ function getPostsByHashtag(hashtag) {
     GROUP BY posts.id, users.id
     HAVING $1 = ANY(array_agg(hashtags.name))
     ORDER BY posts.created_at DESC
-    LIMIT 20;
-    `, [hashtag])
+    OFFSET $2
+    LIMIT 10;
+    `,
+    [hashtag, offset]
+  );
 }
 
 const hashtagRepository = {
-    getTrendingHashtags,
-    getPostsByHashtag
-}
+  getTrendingHashtags,
+  getPostsByHashtag,
+};
 
-export default hashtagRepository
+export default hashtagRepository;
