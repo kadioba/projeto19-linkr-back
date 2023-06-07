@@ -8,7 +8,8 @@ async function publishPost(req, res) {
 
 async function getPosts(req, res) {
   const page = req.query.page ? parseInt(req.query.page) : 1;
-  const posts = await postService.getPosts(page);
+  const { userId } = res.locals;
+  const posts = await postService.getPosts(page, userId);
   res.send(posts.rows);
 }
 
