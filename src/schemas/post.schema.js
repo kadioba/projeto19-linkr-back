@@ -13,5 +13,9 @@ const editPost = joi.object({
   content: joi.string().trim().allow(""),
 });
 
-const postSchema = { publishPost, editPost };
+const paramsPostId = joi.object({
+  postId: joi.number().required()
+})
+
+const postSchema = { publishPost, editPost, paramsPostId };
 export default postSchema;

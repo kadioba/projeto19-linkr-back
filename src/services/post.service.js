@@ -35,8 +35,12 @@ async function publishPost(url, content, userId) {
   await withTransaction(publishPostWithTransaction);
 }
 
-async function getPosts(page, userId) {
-  const posts = await postRepository.getPosts(page, userId);
+async function repost({postId, userId}){
+  return await postRepository.repost({ postId, userId });
+}
+
+async function getPosts(page) {
+  const posts = await postRepository.getPosts(page);
   return posts;
 }
 
@@ -89,5 +93,5 @@ async function deletePost({ postId, userId }) {
   await withTransaction(deletePostWithTransaction);
 }
 
-const postService = { publishPost, getPosts, getPostsById, like, updatePost, deletePost };
+const postService = { publishPost, repost, getPosts, getPostsById, like, updatePost, deletePost };
 export default postService;
