@@ -5,8 +5,8 @@ async function publishComment({ postId, content, userId }) {
     return comment;
 }
 
-async function getCommentsByPostId(postId) {
-    const comments = await commentRepository.getCommentsByPostId(postId);
+async function getCommentsByPostId(postId, userId) {
+    const comments = await commentRepository.getCommentsByPostId(postId, userId);
     return comments;
 }
 
