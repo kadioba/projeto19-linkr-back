@@ -39,6 +39,12 @@ async function searchUsers(searchText) {
   return await userRepository.searchUsers(searchText);
 }
 
+async function follow({followedId, userId}) {
+  const response = await userRepository.follow({ followedId, userId });
+  const { active } = response.rows[0];
+  return { isFollow: active };
+}
+
 async function getUserDataWithPosts(id, page) {
   const getUserDataWithPostsTransaction = async (client) => {
     const userData = await userRepository.findUserById(id, client);
@@ -48,5 +54,6 @@ async function getUserDataWithPosts(id, page) {
   return await withTransaction(getUserDataWithPostsTransaction);
 }
 
-const userService = { signUp, signIn, signOut, getUser, searchUsers, getUserDataWithPosts };
+const userService = { signUp, signIn, signOut, getUser, searchUsers, getUserDataWithPosts, follow };
+
 export default userService;

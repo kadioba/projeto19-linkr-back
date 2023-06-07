@@ -13,5 +13,6 @@ usersRouter.get("/user", authValidation, userController.getUser);
 usersRouter.get("/user/:id", authValidation, userController.getUserById);
 usersRouter.get("/users/search", authValidation, userController.searchUsers);
 usersRouter.get("/users/:id/posts", authValidation, userController.getUserDataWithPosts);
+usersRouter.post("/user/follow/:followedId", authValidation, userController.follow)
 
 export default usersRouter;

@@ -31,6 +31,13 @@ async function searchUsers(req, res) {
   res.send(result.rows);
 }
 
+async function follow(req, res) {
+  const { followedId } = req.params;
+  const { userId } = res.locals;
+  const response = await userService.follow({followedId, userId });
+  res.send(response);
+}
+
 async function getUserDataWithPosts(req, res) {
   const { id } = req.params;
   const page = req.query.page ? parseInt(req.query.page) : 1;
@@ -38,5 +45,6 @@ async function getUserDataWithPosts(req, res) {
   res.send(result);
 }
 
-const userController = { signUp, signIn, signOut, getUser, searchUsers, getUserById, getUserDataWithPosts };
+const userController = { signUp, signIn, signOut, getUser, searchUsers, getUserById, getUserDataWithPosts, follow };
+
 export default userController;

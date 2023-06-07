@@ -20,7 +20,7 @@ async function createPost({ url, content, userId }, data, client = db) {
   return result.rows[0].id;
 }
 
-async function getPosts(page, client = db) {
+async function getPosts(page, userId, client = db) {
   const offset = (page - 1) * 10;
   return await client.query(
     `
@@ -46,12 +46,12 @@ async function getPosts(page, client = db) {
       ) AS liked_by
     FROM posts
     JOIN users ON posts.user_id = users.id
+    LEFT JOIN followers ON (posts.user_id = followers.followed_id AND followers.follower_id = $1 AND followers.active = true)
+    WHERE posts.user_id = $1 OR followers.followed_id IS NOT NULL
     ORDER BY posts.created_at DESC
-    OFFSET $1
+    OFFSET $2
     LIMIT 10;
-  `,
-    [offset]
-  );
+  `, [userId, offset]);
 }
 
 async function getPostsById(id, page, client = db) {
