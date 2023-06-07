@@ -1,22 +1,22 @@
-import hashtagService from "../services/hashtag.service.js"
+import hashtagService from "../services/hashtag.service.js";
 
 async function getTrendingHashtags(req, res) {
-    const trendingHashtags = await hashtagService.getTrendingHashtags()
+  const trendingHashtags = await hashtagService.getTrendingHashtags();
 
-    res.status(200).send(trendingHashtags)
+  res.status(200).send(trendingHashtags);
 }
 
 async function getPostsByHashtag(req, res) {
-    const { hashtag } = req.params
+  const { hashtag } = req.params;
+  const page = req.query.page ? parseInt(req.query.page) : 1;
+  const postsByHashtag = await hashtagService.getPostsByHashtag(hashtag, page);
 
-    const postsByHashtag = await hashtagService.getPostsByHashtag(hashtag)
-
-    res.status(200).send(postsByHashtag)
+  res.status(200).send(postsByHashtag);
 }
 
 const hashtagController = {
-    getTrendingHashtags,
-    getPostsByHashtag
-}
+  getTrendingHashtags,
+  getPostsByHashtag,
+};
 
-export default hashtagController
+export default hashtagController;
