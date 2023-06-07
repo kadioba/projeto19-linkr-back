@@ -31,5 +31,12 @@ async function searchUsers(req, res){
   res.send(result.rows);
 }
 
-const userController = { signUp, signIn, signOut, getUser, searchUsers, getUserById };
+async function follow(req, res) {
+  const { followedId } = req.params;
+  const { userId } = res.locals;
+  const response = await userService.follow({followedId, userId });
+  res.send(response);
+}
+
+const userController = { signUp, signIn, signOut, getUser, searchUsers, getUserById, follow };
 export default userController;

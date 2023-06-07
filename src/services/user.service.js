@@ -37,5 +37,11 @@ async function searchUsers(searchText){
   return await userRepository.searchUsers(searchText);
 }
 
-const userService = { signUp, signIn, signOut, getUser, searchUsers };
+async function follow({followedId, userId}) {
+  const response = await userRepository.follow({ followedId, userId });
+  const { active } = response.rows[0];
+  return { isFollow: active };
+}
+
+const userService = { signUp, signIn, signOut, getUser, searchUsers, follow };
 export default userService;

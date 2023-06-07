@@ -12,5 +12,6 @@ usersRouter.post("/users/signout", authValidation, userController.signOut) // AU
 usersRouter.get("/user", authValidation, userController.getUser) // AUTH
 usersRouter.get("/user/:id", authValidation, userController.getUserById)
 usersRouter.get("/users/search", authValidation, userController.searchUsers)
+usersRouter.post("/user/follow/:followedId", authValidation, userController.follow)
 
 export default usersRouter;
