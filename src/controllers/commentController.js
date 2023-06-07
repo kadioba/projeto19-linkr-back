@@ -11,7 +11,8 @@ async function publishComment(req, res) {
 
 async function getCommentsByPostId(req, res) {
     const { postId } = req.params;
-    const comments = await commentService.getCommentsByPostId(postId);
+    const { userId } = res.locals;
+    const comments = await commentService.getCommentsByPostId(postId, userId);
     res.send(comments.rows);
 }
 
