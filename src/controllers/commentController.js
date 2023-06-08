@@ -5,8 +5,9 @@ async function publishComment(req, res) {
     const { content } = req.body;
     const { userId } = res.locals;
     console.log(postId, content, userId)
-    await commentService.publishComment({ postId, content, userId });
-    res.sendStatus(201);
+    const post = await commentService.publishComment({ postId, content, userId });
+    console.log(post.rows[0])
+    res.status(201).send(post.rows[0]);
 }
 
 async function getCommentsByPostId(req, res) {
