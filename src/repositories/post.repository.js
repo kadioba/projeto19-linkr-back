@@ -27,7 +27,7 @@ async function repost({ postId, userId }, client = db) {
   `, [postId, userId])
 }
 
-async function getPosts(page, client = db) {
+async function getPosts(page, userId, client = db) {
   const offset = (page - 1) * 10;
   return await client.query(`
     WITH original_posts AS (

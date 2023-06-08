@@ -39,8 +39,8 @@ async function repost({postId, userId}){
   return await postRepository.repost({ postId, userId });
 }
 
-async function getPosts(page) {
-  const posts = await postRepository.getPosts(page);
+async function getPosts(page, userId) {
+  const posts = await postRepository.getPosts(page, userId);
   return posts;
 }
 
