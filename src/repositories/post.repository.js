@@ -27,7 +27,7 @@ async function repost({ postId, userId }, client = db) {
   `, [postId, userId])
 }
 
-async function getPosts(page, client = db) {
+async function getPosts(page, userId, client = db) {
   const offset = (page - 1) * 10;
   return await client.query(`
     WITH original_posts AS (
@@ -42,6 +42,9 @@ async function getPosts(page, client = db) {
         users.id AS user_id,
         users.picture,
         users.username,
+        NULL::integer as reposter_user_id,
+        NULL::text as reposter_username, 
+        NULL::integer as repost_id,
         (
           SELECT COALESCE(
             json_object_agg(likes.user_id, liked_users.username),
@@ -50,12 +53,16 @@ async function getPosts(page, client = db) {
           FROM likes
           LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
           WHERE likes.post_id = posts.id AND likes.active = true
-        ) AS liked_by,
-        NULL::integer as reposter_user_id,
-        NULL::text as reposter_username, 
-        NULL::integer as repost_id
+        ) AS liked_by
       FROM posts
       JOIN users ON posts.user_id = users.id
+      WHERE users.id = $2
+        OR users.id IN (
+            SELECT followed_id
+            FROM followers
+            WHERE follower_id = $2
+              AND active = true
+        )
     ),
     reposted_posts AS (
       SELECT
@@ -69,6 +76,9 @@ async function getPosts(page, client = db) {
         users.id AS user_id,
         users.picture,
         users.username,
+        reposts.reposter_user_id,
+        reposting_users.username AS reposter_username, 
+        reposts.id as repost_id,
         (
           SELECT COALESCE(
             json_object_agg(likes.user_id, liked_users.username),
@@ -77,14 +87,18 @@ async function getPosts(page, client = db) {
           FROM likes
           LEFT JOIN users AS liked_users ON liked_users.id = likes.user_id
           WHERE likes.post_id = posts.id AND likes.active = true
-        ) AS liked_by,
-        reposts.reposter_user_id,
-        reposting_users.username AS reposter_username, 
-        reposts.id as repost_id
+        ) AS liked_by
       FROM posts
       JOIN reposts ON posts.id = reposts.post_id
       JOIN users ON posts.user_id = users.id
       JOIN users AS reposting_users ON reposts.reposter_user_id = reposting_users.id
+      WHERE reposts.reposter_user_id = $2
+        OR reposts.reposter_user_id IN (
+            SELECT followed_id
+            FROM followers
+            WHERE follower_id = $2
+              AND active = true
+        )
     ),
     repost_counts AS (
       SELECT
@@ -104,11 +118,11 @@ async function getPosts(page, client = db) {
       original_posts.user_id,
       original_posts.picture,
       original_posts.username,
-      original_posts.liked_by,
       original_posts.repost_id,
       original_posts.reposter_user_id,
       original_posts.reposter_username,
-      COALESCE(repost_counts.repost_count, 0) as repost_count
+      COALESCE(repost_counts.repost_count, 0) as repost_count,
+      original_posts.liked_by
     FROM original_posts
     LEFT JOIN repost_counts ON original_posts.id = repost_counts.post_id
     UNION ALL
@@ -123,17 +137,17 @@ async function getPosts(page, client = db) {
       reposted_posts.user_id,
       reposted_posts.picture,
       reposted_posts.username,
-      reposted_posts.liked_by,
       reposted_posts.repost_id,
       reposted_posts.reposter_user_id,
       reposted_posts.reposter_username,
-      COALESCE(repost_counts.repost_count, 0) as repost_count
+      COALESCE(repost_counts.repost_count, 0) as repost_count,
+      reposted_posts.liked_by
     FROM reposted_posts
     LEFT JOIN repost_counts ON reposted_posts.id = repost_counts.post_id
-    ORDER BY created_at DESC  
+    ORDER BY created_at DESC
     OFFSET $1
     LIMIT 10;
-  `, [offset]);
+  `, [offset, userId]);
 }
 
 async function getPostsById(id, page, client = db) {
