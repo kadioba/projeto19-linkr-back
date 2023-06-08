@@ -147,7 +147,7 @@ async function getPosts(page, userId, client = db) {
     ORDER BY created_at DESC
     OFFSET $1
     LIMIT 10;
-  `, [offset]);
+  `, [offset, userId]);
 }
 
 async function getPostsById(id, page, client = db) {
