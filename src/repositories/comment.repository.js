@@ -37,7 +37,7 @@ async function getCommentsByPostId(postId, userId) {
         JOIN users ON comments.commented_user_id = users.id
         JOIN posts ON comments.post_id = posts.id
         WHERE comments.post_id = $1
-        ORDER BY comments.created_at DESC;
+        ORDER BY comments.created_at ASC;
         `,
         [postId, userId]
     );
